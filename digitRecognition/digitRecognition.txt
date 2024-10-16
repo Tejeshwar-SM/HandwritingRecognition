@@ -1,0 +1,114 @@
+import tensorflow as tf
+mnist = tf.keras.datasets.mnist # this is the dataset for handwritten digits 0-9 based on 28x28 sized images
+## unpack the dataset into train and test dataset
+(x_train, y_train),(x_test, y_test) = mnist.load_data()
+
+x_train.shape
+x_test.shape
+## plot a graph to see how the data looks like
+import matplotlib.pyplot as plt
+plt.imshow(x_train[0])
+plt.show()
+plt.imshow(x_train[0], cmap = plt.cm.binary)
+#### Check the values of each pixel
+### Before Normalisation
+print(x_train[0])# prints the first image
+###### As images are in Gray Level (1 channel=> 0 to 255), not colored (RGB)
+##### Normalizing the data | Pre-Processing Step
+x_train = tf.keras.utils.normalize(x_train, axis =1 )
+x_test = tf.keras.utils.normalize(x_test, axis=1)
+plt.imshow(x_train[0], cmap = plt.cm.binary)
+# after normalisation, the matrix looks like this
+print(x_train[0])
+print(y_train[0])
+#### Resizing the image to make it suitable for applying Convolution operation
+import numpy as np
+IMG_SIZE = 28
+x_trainr = np.array(x_train).reshape(-1, IMG_SIZE, IMG_SIZE,1)
+## increasing one dimension for kernel operation
+x_testr = np.array(x_test).reshape(-1, IMG_SIZE, IMG_SIZE,1)
+print("Training Samples Dimension", x_trainr.shape)
+print("Testing Samples Dimension", x_testr.shape)
+### Creating a Deep Neural Network
+##### Training on 60k samples of MNIST handwritten dataset
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
+## creating a neural network now
+model = Sequential()
+
+### First Convolution Layer 0 1 2 3 (60000, 28, 28, 1)
+model.add(Conv2D(64, (3,3), input_shape = x_trainr.shape[1:]))
+## only for the first convolution layer to mention input layer size
+model.add(Activation("relu"))
+##activation function to make it non-linear, if<0 remove, if>0 keep
+model.add(MaxPooling2D(pool_size=(2,2)))
+## maxpooling single maximum value of 2x2
+
+## 2nd Convoltion Layer
+model.add(Conv2D(64, (3,3)))
+model.add(Activation("relu"))
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+## 3rd Convolution Layer
+model.add(Conv2D(64, (3,3)))
+model.add(Activation("relu"))
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+## Fully connected layer #1 20x20 = 400
+model.add(Flatten()) ## before using fully connected layer, flatted 2D->1D
+model.add(Dense(64))
+model.add(Activation("relu"))
+
+## Fully connected layer #2
+model.add(Dense(32))
+model.add(Activation("relu"))
+
+## Fully connected layer #3
+
+model.add(Dense(10))# last dense layer must be equal to number of classes, 10 (0-9)
+model.add(Activation("softmax"))
+# activation function is changed to softmax(class probabilities)
+
+#if binary classification, Dense(1) and Activation("sigmoid")
+
+model.summary()
+print("Total training samples: ", len(x_trainr))
+model.compile(loss = "sparse_categorical_crossentropy", optimizer= "adam", metrics = ['accuracy'])
+model.fit(x_trainr, y_train, epochs=5, validation_split=0.3)
+#training the model
+if
+validation accuracy ~= accuracy -> thats good
+if val_accuracy < accuracy -> overfitting -> solution: dropout...
+## evaluating on testing data set
+test_loss, test_acc = model.evaluate(x_testr, y_test)
+print("Test Loss on 10,000 test samples", test_loss)
+print("Validation Accuracy on 10,000 test samples", test_acc)
+predictions = model.predict([x_testr])
+# predictions = model.predict([x_test])
+## there is specialised method for efficiently saving your model,
+
+print(predictions)#these are predictions 
+##based on  one hot encodeing so these are only arrays
+##containing softmax probabilities
+#inorder to understand, convert the predictions from one
+# hot encoding, we need to use numpy for that
+print(np.argmax(predictions[0]))
+## so actually argmax will return the max value index and find
+## the value of it
+plt.imshow(x_test[0])
+print(np.argmax(predictions[6969]))
+plt.imshow(x_test[6969])
+import cv2
+img = cv2.imread('image-1.jpg')
+plt.imshow(img)
+img.shape
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray.shape
+resized = cv2.resize(gray, (28,28), interpolation= cv2.INTER_AREA)
+resized.shape
+newimg = tf.keras.utils.normalize(resized, axis=1)
+# scaling 0 to 1
+newimg = np.array(newimg).reshape(-1, IMG_SIZE, IMG_SIZE,1)
+newimg.shape
+predictions = model.predict(newimg)
+print(np.argmax(predictions))
